@@ -3,11 +3,8 @@
         <div v-show="this.status == 'Not Connected'"><button v-on:click="start()">Connect To IPFS</button> <span>{{this.status}}</span></div>
 
         <div v-show="this.status == 'Ready'">
+            <div>{{this.identity}}</div>
             <button v-on:click="showPeers()">Show Peers</button> <span>{{this.readPeerStatus}}</span>
-
-            <div>
-                <input type="text" v-model="subscribedHashtag" /><button v-on:click="subscribeToHashtag()">Join</button>
-            </div>
             <div>{{messageLog}}</div>
             <textarea v-model="messages"></textarea>
             <button v-on:click="sendMessage()">Send</button>
@@ -31,7 +28,7 @@ export default {
             status: 'Not Connected',
             node: null,
             readPeerStatus: '',
-            subscribedHashtag: '',
+            subscribedHashtag: 'com.lob.www:dtwitter-poc',
             messages: '',
             messageLog: '',
             messageListener: null,
@@ -40,22 +37,6 @@ export default {
         }
     },
     methods: {
-        
-        listenForMessages: async function(){
-            let peerList = await this.node.swarm.peers()
-            
-            console.log(peerList)
-            for(var i = 0; i < peerList.length; i++){
-                let addr = peerList[i].addr.toString().split("/")
-                
-                if(addr.length > 5){
-                    console.log(addr)
-                console.log(addr[ addr.length - 1])
-                    this.node.swarm.connect('/ip4/127.0.0.1/tcp/4003/ws/p2p/12D3KooWPu5YhJrxQrVzDbbSUdpb8cFXCFaim4chaPPh91ATuuyT/p2p-circuit/p2p/' + addr[ addr.length - 1])
-
-                }
-            }
-        },
         start: function(){
             const self = this
             const ipfsConfig = {
@@ -64,12 +45,13 @@ export default {
                 config: {
                     Addresses: {
                         Swarm: [
-                            '/dns4/wrtc-star1.par.dwebops.pub/tcp/443/wss/p2p-webrtc-star',
-                            '/dns4/wrtc-star2.sjc.dwebops.pub/tcp/443/wss/p2p-webrtc-star',
+                            '/dns4/pure-sierra-28952.herokuapp.com/tcp/443/wss/p2p-webrtc-star'                  
                         ]
                     },
                     Bootstrap: [
-                            '/dns4/localhost/tcp/4003/ws/p2p/12D3KooWPu5YhJrxQrVzDbbSUdpb8cFXCFaim4chaPPh91ATuuyT'                        
+                            '/dns4/aqueous-beach-31518.herokuapp.com/tcp/4012/ws/p2p/',
+                            // '/dns4/localhost/tcp/4012/ws/p2p/12D3KooWPu5YhJrxQrVzDbbSUdpb8cFXCFaim4chaPPh91ATuuyT',
+                            // '/ip4/127.0.0.1/tcp/4012/ws/p2p/12D3KooWS4dMM3QRHs8kuTfqgji9zWyTAwvPRfsoxMbsfzn5A6B6'                     
                     ]
                 },
                 libp2p: {
@@ -90,6 +72,7 @@ export default {
                 self.status = res.status
                 self.identity = res.identity
                 self.node = res.node
+                self.subscribeToHashtag()
                 
             })
         },
@@ -125,6 +108,7 @@ export default {
             this.messageLog = this.messageLog + newMsg
         },
         sendMessage: async function(){
+            console.log('sendig...')
             try{
                 await this.node.pubsub.publish(this.subscribedHashtag, this.messages)
             } catch(err){
