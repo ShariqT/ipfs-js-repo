@@ -49,9 +49,7 @@ export default {
                         ]
                     },
                     Bootstrap: [
-                            '/dns4/aqueous-beach-31518.herokuapp.com/tcp/4012/ws/p2p/',
-                            // '/dns4/localhost/tcp/4012/ws/p2p/12D3KooWPu5YhJrxQrVzDbbSUdpb8cFXCFaim4chaPPh91ATuuyT',
-                            // '/ip4/127.0.0.1/tcp/4012/ws/p2p/12D3KooWS4dMM3QRHs8kuTfqgji9zWyTAwvPRfsoxMbsfzn5A6B6'                     
+                        '/dns4/149.28.87.35/tcp/4012/ws/p2p/12D3KooWCbYZPBcNLav3vu6iYr8yR3wLDr4j196seP73Xr88WKBy'
                     ]
                 },
                 libp2p: {
