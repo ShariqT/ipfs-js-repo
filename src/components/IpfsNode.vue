@@ -49,7 +49,7 @@ export default {
                         ]
                     },
                     Bootstrap: [
-                        '/dns4/149.28.87.35/tcp/4012/ws/p2p/12D3KooWCbYZPBcNLav3vu6iYr8yR3wLDr4j196seP73Xr88WKBy'
+                        '/dns4/149.28.87.35/tcp/4012/wss/p2p/12D3KooWCbYZPBcNLav3vu6iYr8yR3wLDr4j196seP73Xr88WKBy'
                     ]
                 },
                 libp2p: {
