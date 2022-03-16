@@ -1,14 +1,26 @@
 <template>
     <div>
-        <div v-show="this.status == 'Not Connected'"><button v-on:click="start()">Connect To IPFS</button> <span>{{this.status}}</span></div>
+        <div v-show="this.status == 'Not Connected'" class="mt-3"><button class="button is-large is-fullwidth is-link" v-on:click="start()">Connect To DTwitter</button></div>
 
         <div v-show="this.status == 'Ready'">
-            <div>{{this.identity}}</div>
-            <button v-on:click="showPeers()">Show Peers</button> <span>{{this.readPeerStatus}}</span>
-            <div>{{messageLog}}</div>
-            <textarea v-model="messages"></textarea>
-            <button v-on:click="sendMessage()">Send</button>
+            <div class="message is-info">
+                <div class="message-body">
+                    Your node is <strong>{{this.identity}}</strong>. This will double as your username.
+                </div>
+            </div>
+            <div class="block">
+                <tweet :nodeName="tweet.from" :tweet="tweet.data" v-for="(tweet, idx) in messageLog" v-bind:key="idx"></tweet>
+            </div>
+            <textarea class="textarea" placeholder="Tweet your message over decentralized networks!" v-model="messages"></textarea>
+            <button class="button is-fullwidth is-success" v-on:click="sendMessage()">Send</button>
         </div>
+
+        <modal ref="LoadingModal">
+            <div class="box">
+                <p>Connecting...</p>
+                <progress class="progress is-large is-info" max="100">60%</progress>
+            </div>
+        </modal>
         
     </div>
 </template>
@@ -17,11 +29,16 @@
 import { startNode } from '../service/Node'
 import filters from 'libp2p-websockets/src/filters'
 import Websockets from 'libp2p-websockets'
-
+import Modal from './Modal.vue'
+import Tweet from './Tweet.vue'
 const transportKey = Websockets.prototype[Symbol.toStringTag]
 
 export default {
     name: 'IpfsNode',
+    components: {
+        'modal': Modal,
+        'tweet': Tweet
+    },
     data: function() {
         return {
             identity: null,
@@ -30,26 +47,26 @@ export default {
             readPeerStatus: '',
             subscribedHashtag: 'com.lob.www:dtwitter-poc',
             messages: '',
-            messageLog: '',
-            messageListener: null,
-            gunDB: null
+            messageLog: [],
+            messageListener: null
 
         }
     },
     methods: {
         start: function(){
             const self = this
+            this.$refs.LoadingModal.openModal();
             const ipfsConfig = {
                 repo: 'ipfs-twitter-' + Math.random(),
                 EXPERIMENTAL: {pubsub: true},
                 config: {
                     Addresses: {
                         Swarm: [
-                            '/dns4/pure-sierra-28952.herokuapp.com/tcp/443/wss/p2p-webrtc-star'                  
+                            '/dns4/pure-sierra-28952.herokuapp.com/tcp/443/wss/p2p-webrtc-star',
                         ]
                     },
                     Bootstrap: [
-                        '/dns4/149.28.87.35/tcp/443/wss/p2p/12D3KooWCbYZPBcNLav3vu6iYr8yR3wLDr4j196seP73Xr88WKBy'
+                        '/dns4/projects.enshapa-engineering.com/tcp/443/wss/p2p/12D3KooWCbYZPBcNLav3vu6iYr8yR3wLDr4j196seP73Xr88WKBy'
                     ]
                 },
                 libp2p: {
@@ -71,6 +88,8 @@ export default {
                 self.identity = res.identity
                 self.node = res.node
                 self.subscribeToHashtag()
+                self.$refs.LoadingModal.closeModal();
+
                 
             })
         },
@@ -101,9 +120,9 @@ export default {
         },
         handleMessage: async function(msg){
             console.log(msg)
-            let newMsg = msg.data
+            let newMsg = msg.data.toString()
             console.log(newMsg)
-            this.messageLog = this.messageLog + newMsg
+            this.messageLog.unshift({ 'from': msg.from.toString(), 'data': newMsg })
         },
         sendMessage: async function(){
             console.log('sendig...')
